@@ -1,0 +1,15 @@
+body {
+    @apply antialiased relative bg-cool-gray-200 font-sans;
+}
+
+header {
+    @apply mb-8;
+}
+
+.container {
+    @apply max-w-6xl mx-auto px-6;
+}
+
+h1 {
+    @apply text-center text-cool-gray-900 font-extrabold text-4xl mb-8;
+}

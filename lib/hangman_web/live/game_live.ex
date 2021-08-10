@@ -8,7 +8,7 @@ defmodule HangmanWeb.GameLive do
 
   def render(assigns) do
     ~L"""
-      <div>test</div>
+      <h1 class="text-red-500 text-5xl font-bold text-center">Tailwind CSS</h1>
     """
   end
 

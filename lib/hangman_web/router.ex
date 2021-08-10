@@ -18,6 +18,9 @@ defmodule HangmanWeb.Router do
     pipe_through :browser
 
     live "/", PageLive, :index
+
+    # change this to dynamic id later
+    live "/game/1", GameLive
   end
 
   # Other scopes may use custom stacks.

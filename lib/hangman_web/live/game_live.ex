@@ -16,7 +16,7 @@ defmodule HangmanWeb.GameLive do
   end
 
   def render(assigns) do
-    alfabeth = [
+    alfabet = [
       "a",
       "b",
       "c",
@@ -68,7 +68,7 @@ defmodule HangmanWeb.GameLive do
 
      <div class="my-4 mx-auto max-w-screen-sm min-w-min flex flex-row flex-wrap gap-4 justify-center">
 
-      <%= for letter <- alfabeth do %>
+      <%= for letter <- alfabet do %>
         <button
           class="w-24 uppercase border-gray-700"
           <%= is_taken?(@correctly_guessed_characters, @wrongly_guessed_characters, letter) %>

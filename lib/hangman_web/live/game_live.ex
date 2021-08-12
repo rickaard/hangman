@@ -2,7 +2,15 @@ defmodule HangmanWeb.GameLive do
   use HangmanWeb, :live_view
 
   def mount(_params, _session, socket) do
-    socket = assign(socket, word: "foo", wrong_steps: [1], correctly_guessed_characters: ["o"])
+    socket =
+      assign(
+        socket,
+        word: "foo",
+        correctly_guessed_characters: ["o"],
+        wrong_steps: [1],
+        wrongly_guessed_characters: []
+      )
+
     {:ok, socket}
   end
 
@@ -15,6 +23,7 @@ defmodule HangmanWeb.GameLive do
             <%= path_components(step) %>
           <% end %>
         </svg>
+
         <div class="flex flex-row justify-center gap-8  mt-20">
           <%= for character <- String.graphemes(@word) do %>
             <p class="border-b-2 w-16 border-gray-500 text-5xl font-bold uppercase text-center h-20">
@@ -24,8 +33,38 @@ defmodule HangmanWeb.GameLive do
             </p>
           <% end %>
         </div>
+
      </div>
-     <button phx-click="add" class="w-24">+</button>
+
+     <div class="my-4 mx-auto max-w-screen-sm min-w-min flex flex-row flex-wrap gap-4 justify-center">
+      <button phx-click="add" class="w-24 uppercase border-gray-700">a</button>
+      <button class="w-24 uppercase border-gray-700">b</button>
+      <button class="w-24 uppercase border-gray-700">c</button>
+      <button class="w-24 uppercase border-gray-700">d</button>
+      <button class="w-24 uppercase border-gray-700">e</button>
+      <button class="w-24 uppercase border-gray-700">f</button>
+      <button class="w-24 uppercase border-gray-700">g</button>
+      <button class="w-24 uppercase border-gray-700">h</button>
+      <button class="w-24 uppercase border-gray-700">i</button>
+      <button class="w-24 uppercase border-gray-700">j</button>
+      <button class="w-24 uppercase border-gray-700">k</button>
+      <button class="w-24 uppercase border-gray-700">l</button>
+      <button class="w-24 uppercase border-gray-700">m</button>
+      <button class="w-24 uppercase border-gray-700">n</button>
+      <button class="w-24 uppercase border-gray-700">o</button>
+      <button class="w-24 uppercase border-gray-700">p</button>
+      <button class="w-24 uppercase border-gray-700">q</button>
+      <button class="w-24 uppercase border-gray-700">r</button>
+      <button class="w-24 uppercase border-gray-700">s</button>
+      <button class="w-24 uppercase border-gray-700">t</button>
+      <button class="w-24 uppercase border-gray-700">u</button>
+      <button class="w-24 uppercase border-gray-700">v</button>
+      <button class="w-24 uppercase border-gray-700">w</button>
+      <button class="w-24 uppercase border-gray-700">x</button>
+      <button class="w-24 uppercase border-gray-700">y</button>
+      <button class="w-24 uppercase border-gray-700">z</button>
+     </div>
+
     """
   end
 

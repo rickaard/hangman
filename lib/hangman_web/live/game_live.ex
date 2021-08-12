@@ -6,7 +6,8 @@ defmodule HangmanWeb.GameLive do
       assign(
         socket,
         word: "foo",
-        correctly_guessed_characters: ["o"],
+        correctly_guessed_characters: [],
+        # change to normal integer and use range in loop instead
         wrong_steps: [1],
         wrongly_guessed_characters: []
       )
@@ -15,6 +16,35 @@ defmodule HangmanWeb.GameLive do
   end
 
   def render(assigns) do
+    alfabeth = [
+      "a",
+      "b",
+      "c",
+      "d",
+      "e",
+      "f",
+      "g",
+      "h",
+      "i",
+      "j",
+      "k",
+      "l",
+      "m",
+      "n",
+      "o",
+      "p",
+      "q",
+      "r",
+      "s",
+      "t",
+      "u",
+      "v",
+      "w",
+      "q",
+      "y",
+      "z"
+    ]
+
     ~L"""
       <h1 class="text-5xl font-bold text-center">iex> <span class="text-red-500">:hangman</span></h1>
       <div class="bg-white p-8 my-16 mx-auto max-w-screen-sm min-w-min">
@@ -37,48 +67,77 @@ defmodule HangmanWeb.GameLive do
      </div>
 
      <div class="my-4 mx-auto max-w-screen-sm min-w-min flex flex-row flex-wrap gap-4 justify-center">
-      <button phx-click="add" class="w-24 uppercase border-gray-700">a</button>
-      <button class="w-24 uppercase border-gray-700">b</button>
-      <button class="w-24 uppercase border-gray-700">c</button>
-      <button class="w-24 uppercase border-gray-700">d</button>
-      <button class="w-24 uppercase border-gray-700">e</button>
-      <button class="w-24 uppercase border-gray-700">f</button>
-      <button class="w-24 uppercase border-gray-700">g</button>
-      <button class="w-24 uppercase border-gray-700">h</button>
-      <button class="w-24 uppercase border-gray-700">i</button>
-      <button class="w-24 uppercase border-gray-700">j</button>
-      <button class="w-24 uppercase border-gray-700">k</button>
-      <button class="w-24 uppercase border-gray-700">l</button>
-      <button class="w-24 uppercase border-gray-700">m</button>
-      <button class="w-24 uppercase border-gray-700">n</button>
-      <button class="w-24 uppercase border-gray-700">o</button>
-      <button class="w-24 uppercase border-gray-700">p</button>
-      <button class="w-24 uppercase border-gray-700">q</button>
-      <button class="w-24 uppercase border-gray-700">r</button>
-      <button class="w-24 uppercase border-gray-700">s</button>
-      <button class="w-24 uppercase border-gray-700">t</button>
-      <button class="w-24 uppercase border-gray-700">u</button>
-      <button class="w-24 uppercase border-gray-700">v</button>
-      <button class="w-24 uppercase border-gray-700">w</button>
-      <button class="w-24 uppercase border-gray-700">x</button>
-      <button class="w-24 uppercase border-gray-700">y</button>
-      <button class="w-24 uppercase border-gray-700">z</button>
+
+      <%= for letter <- alfabeth do %>
+        <button
+          class="w-24 uppercase border-gray-700"
+          <%= is_taken?(@correctly_guessed_characters, @wrongly_guessed_characters, letter) %>
+          phx-click="add"
+          phx-value-letter="<%= letter %>"
+          >
+          <%= letter %>
+        </button>
+      <% end %>
      </div>
 
     """
   end
 
-  def handle_event("add", _, socket) do
+  def handle_event("add", %{"letter" => letter}, socket) do
+    socket =
+      socket
+      |> is_letter_correct_or_wrong(letter)
+
+    {:noreply, socket}
+  end
+
+  defp is_letter_correct_or_wrong(socket, letter) do
+    case String.contains?(socket.assigns.word, letter) do
+      true ->
+        socket =
+          assign(socket,
+            correctly_guessed_characters: socket.assigns.correctly_guessed_characters ++ [letter]
+          )
+
+        socket
+
+      false ->
+        socket =
+          socket
+          |> add_to_wrong_steps_list()
+          |> assign(
+            wrongly_guessed_characters: socket.assigns.wrongly_guessed_characters ++ [letter]
+          )
+
+        socket
+    end
+  end
+
+  defp add_to_wrong_steps_list(socket) do
     reversed_list = Enum.reverse(socket.assigns.wrong_steps)
     [last_element_in_list | _rest] = reversed_list
 
     case last_element_in_list do
       11 ->
-        {:noreply, socket}
+        socket
 
       _ ->
         new_list = [last_element_in_list + 1 | reversed_list] |> Enum.reverse()
-        {:noreply, assign(socket, wrong_steps: new_list)}
+        socket = assign(socket, wrong_steps: new_list)
+        socket
+    end
+  end
+
+  defp is_taken?(wrong_letters, correct_letters, current_letter) do
+    cond do
+      Enum.member?(wrong_letters, current_letter) ->
+        "disabled"
+
+      Enum.member?(correct_letters, current_letter) ->
+        "disabled"
+
+      true ->
+        nil
     end
   end
 

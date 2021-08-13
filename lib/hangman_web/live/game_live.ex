@@ -7,8 +7,7 @@ defmodule HangmanWeb.GameLive do
         socket,
         word: "foo",
         correctly_guessed_characters: [],
-        # change to normal integer and use range in loop instead
-        wrong_steps: [1],
+        wrong_steps: 1,
         wrongly_guessed_characters: []
       )
 
@@ -49,7 +48,7 @@ defmodule HangmanWeb.GameLive do
       <h1 class="text-5xl font-bold text-center">iex> <span class="text-red-500">:hangman</span></h1>
       <div class="bg-white p-8 my-16 mx-auto max-w-screen-sm min-w-min">
         <svg class="hangman mx-auto" width="304" height="288" viewBox="0 0 304 288" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <%= for step <- @wrong_steps do %>
+          <%= for step <- 1..@wrong_steps do %>
             <%= path_components(step) %>
           <% end %>
         </svg>
@@ -87,6 +86,7 @@ defmodule HangmanWeb.GameLive do
     socket =
       socket
       |> is_letter_correct_or_wrong(letter)
+      |> IO.inspect(label: "socket")
 
     {:noreply, socket}
   end
@@ -104,7 +104,7 @@ defmodule HangmanWeb.GameLive do
       false ->
         socket =
           socket
-          |> add_to_wrong_steps_list()
+          |> increase_wrong_steps()
           |> assign(
             wrongly_guessed_characters: socket.assigns.wrongly_guessed_characters ++ [letter]
           )
@@ -113,17 +113,14 @@ defmodule HangmanWeb.GameLive do
     end
   end
 
-  defp add_to_wrong_steps_list(socket) do
-    reversed_list = Enum.reverse(socket.assigns.wrong_steps)
-    [last_element_in_list | _rest] = reversed_list
-
-    case last_element_in_list do
+  defp increase_wrong_steps(socket) do
+    case socket.assigns.wrong_steps do
       11 ->
+        socket = put_flash(socket, :error, "You ded 💀💀💀")
         socket
 
       _ ->
-        new_list = [last_element_in_list + 1 | reversed_list] |> Enum.reverse()
-        socket = assign(socket, wrong_steps: new_list)
+        socket = assign(socket, wrong_steps: socket.assigns.wrong_steps + 1)
         socket
     end
   end

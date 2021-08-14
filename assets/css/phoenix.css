@@ -57,7 +57,8 @@ input[type='submit'] {
     text-align: center;
     text-decoration: none;
     text-transform: uppercase;
-    white-space: nowrap
+    white-space: nowrap;
+    position: relative;
 }
 
 .button:focus,
@@ -83,6 +84,32 @@ input[type='reset'][disabled],
 input[type='submit'][disabled] {
     cursor: default;
     opacity: .5
+}
+
+button[disabled]::before {
+    content: "";
+    height: 3.7rem;
+    background: red;
+    display: block;
+    position: absolute;
+    min-width: max-content;
+    width: 0.3rem;
+    top: 0rem;
+    transform: skewX(238deg);
+    left: 2.8rem;
+}
+
+button[disabled]::after {
+    content: "";
+    height: 3.7rem;
+    background: red;
+    display: block;
+    position: absolute;
+    min-width: max-content;
+    width: 0.3rem;
+    top: 0rem;
+    transform: skewX(305deg);
+    left: 2.8rem;
 }
 
 .button[disabled]:focus,

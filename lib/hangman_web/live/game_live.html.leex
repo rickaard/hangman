@@ -19,15 +19,17 @@
 
 </div>
 
-<div class="my-4 mx-auto max-w-screen-sm min-w-min flex flex-row flex-wrap gap-4 justify-center">
+<div class="my-4 mx-auto max-w-screen-sm min-w-min flex flex-row flex-wrap gap-4 justify-center letter-button--wrapper">
   <%= for letter <- @alphabet do %>
+
     <button
       class="w-24 uppercase border-gray-700"
-      <%= is_taken?(@correctly_guessed_characters, @wrongly_guessed_characters, letter) %>
+      <%= is_letter_taken(@correctly_guessed_characters, @wrongly_guessed_characters, letter) %>
       phx-click="add"
       phx-value-letter="<%= letter %>"
-      >
+    >
       <%= letter %>
     </button>
+
   <% end %>
 </div>

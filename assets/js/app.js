@@ -34,3 +34,8 @@ liveSocket.connect()
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
 
+document.addEventListener('keydown', event => {
+  const key = event.key;
+  document.querySelector(`button[phx-value-letter="${key}"]`)?.click()
+})
+

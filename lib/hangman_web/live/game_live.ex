@@ -8,60 +8,54 @@ defmodule HangmanWeb.GameLive do
   end
 
   def handle_event("add", _params, %{assigns: %{game_status: status}} = socket) when status == :over do
-    IO.inspect(socket, label: "*** GAME_STATUS SOCKET ***")
-    IO.inspect(status, label: "*** STATUS *** ")
     {:noreply, socket}
   end
-
-  # when a key is pressed do:
-  # 1. add letter to either correct_guesses or wrong_guesses
-  # 2. check if user has won
-  # 3. check if user is dead (i.e 11 wrong guesses)
-  # 4.
 
   def handle_event("add", %{"letter" => letter}, socket) do
     socket =
       socket
-      |> is_letter_correct_or_wrong(letter)
-      |> IO.inspect(label: "*** SOCKET *** ")
+      |> add_to_correct_or_wrong_list(letter)
+      |> check_if_win()
+      |> check_if_dead()
 
     {:noreply, socket}
   end
 
-  defp is_letter_correct_or_wrong(%{assigns: %{correctly_guessed_characters: correct_list}} = socket, letter) do
+  defp check_if_win(%{assigns: %{correctly_guessed_characters: correct_list, word: word}} = socket) do
+    case Helpers.is_correct_word?(correct_list, word) do
+      true ->
+        socket = put_flash(socket, :info, "You won! ✔✔✔") |> assign(game_status: :over)
+        socket
+      false ->
+        socket
+    end
+  end
+
+  defp check_if_dead(%{assigns: %{wrong_steps: wrong_steps}} = socket) do
+    case wrong_steps do
+      11 ->
+        socket = put_flash(socket, :error, "You lost 💀💀💀 The word was \"#{String.upcase(socket.assigns.word)}\"") |> assign(game_status: :over)
+        socket
+      _ ->
+        socket
+    end
+  end
+
+  defp add_to_correct_or_wrong_list(%{assigns: %{correctly_guessed_characters: correct_list}} = socket, letter) do
     case String.contains?(socket.assigns.word, letter) do
       true ->
         socket = assign(socket, correctly_guessed_characters: correct_list ++ [letter])
         socket
 
       false ->
-        socket =
-          socket
-          |> increase_wrong_steps()
-          |> assign(
-            wrongly_guessed_characters: socket.assigns.wrongly_guessed_characters ++ [letter]
-          )
-
+        socket = increase_wrong_steps(socket) |> assign(wrongly_guessed_characters: socket.assigns.wrongly_guessed_characters ++ [letter])
         socket
     end
   end
 
-  defp increase_wrong_steps(socket) do
-    case socket.assigns.wrong_steps do
-      11 ->
-        socket
-
-      10 ->
-        socket =
-          put_flash(socket, :error, "You ded 💀💀💀")
-          |> assign(wrong_steps: socket.assigns.wrong_steps + 1, game_status: :over)
-
-        socket
-
-      _ ->
-        socket = assign(socket, wrong_steps: socket.assigns.wrong_steps + 1)
-        socket
-    end
+  defp increase_wrong_steps(%{assigns: %{wrong_steps: wrong_steps}} = socket) do
+    socket = assign(socket, wrong_steps: wrong_steps + 1)
+    socket
   end
 
   defp is_letter_taken?(wrong_letters, correct_letters, current_letter) do
@@ -81,34 +75,7 @@ defmodule HangmanWeb.GameLive do
         correctly_guessed_characters: [],
         wrong_steps: 1,
         wrongly_guessed_characters: [],
-        alphabet: [
-          "a",
-          "b",
-          "c",
-          "d",
-          "e",
-          "f",
-          "g",
-          "h",
-          "i",
-          "j",
-          "k",
-          "l",
-          "m",
-          "n",
-          "o",
-          "p",
-          "q",
-          "r",
-          "s",
-          "t",
-          "u",
-          "v",
-          "w",
-          "x",
-          "y",
-          "z"
-        ]
+        alphabet: Helpers.get_alphabet()
       )
 
     socket

@@ -5,81 +5,14 @@ defmodule HangmanWeb.GameLive do
     socket =
       assign(
         socket,
-        word: "foo",
+        word: "stefan poop",
         correctly_guessed_characters: [],
         wrong_steps: 1,
-        wrongly_guessed_characters: []
+        wrongly_guessed_characters: [],
+        alphabet: ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","q","y","z"]
       )
 
     {:ok, socket}
-  end
-
-  def render(assigns) do
-    alphabet = [
-      "a",
-      "b",
-      "c",
-      "d",
-      "e",
-      "f",
-      "g",
-      "h",
-      "i",
-      "j",
-      "k",
-      "l",
-      "m",
-      "n",
-      "o",
-      "p",
-      "q",
-      "r",
-      "s",
-      "t",
-      "u",
-      "v",
-      "w",
-      "q",
-      "y",
-      "z"
-    ]
-
-    ~L"""
-      <h1 class="text-5xl font-bold text-center">iex> <span class="text-red-500">:hangman</span></h1>
-      <div class="bg-white p-8 my-16 mx-auto max-w-screen-sm min-w-min">
-        <svg class="hangman mx-auto" width="304" height="288" viewBox="0 0 304 288" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <%= for step <- 1..@wrong_steps do %>
-            <%= path_components(step) %>
-          <% end %>
-        </svg>
-
-        <div class="flex flex-row justify-center gap-8  mt-20">
-          <%= for character <- String.graphemes(@word) do %>
-            <p class="border-b-2 w-16 border-gray-500 text-5xl font-bold uppercase text-center h-20">
-              <%= if Enum.member?(@correctly_guessed_characters, character) do %>
-                <%= character %>
-              <% end %>
-            </p>
-          <% end %>
-        </div>
-
-     </div>
-
-     <div class="my-4 mx-auto max-w-screen-sm min-w-min flex flex-row flex-wrap gap-4 justify-center">
-
-      <%= for letter <- alphabet do %>
-        <button
-          class="w-24 uppercase border-gray-700"
-          <%= is_taken?(@correctly_guessed_characters, @wrongly_guessed_characters, letter) %>
-          phx-click="add"
-          phx-value-letter="<%= letter %>"
-          >
-          <%= letter %>
-        </button>
-      <% end %>
-     </div>
-
-    """
   end
 
   def handle_event("add", %{"letter" => letter}, socket) do

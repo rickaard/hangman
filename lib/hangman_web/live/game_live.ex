@@ -4,44 +4,7 @@ defmodule HangmanWeb.GameLive do
   alias Hangman.Helpers
 
   def mount(_params, _session, socket) do
-    socket =
-      assign(
-        socket,
-        word: Helpers.random_word(),
-        correctly_guessed_characters: [],
-        wrong_steps: 1,
-        wrongly_guessed_characters: [],
-        alphabet: [
-          "a",
-          "b",
-          "c",
-          "d",
-          "e",
-          "f",
-          "g",
-          "h",
-          "i",
-          "j",
-          "k",
-          "l",
-          "m",
-          "n",
-          "o",
-          "p",
-          "q",
-          "r",
-          "s",
-          "t",
-          "u",
-          "v",
-          "w",
-          "x",
-          "y",
-          "z"
-        ]
-      )
-
-    {:ok, socket}
+    {:ok, starting_state(socket)}
   end
 
   def handle_event("add", %{"letter" => letter}, socket) do
@@ -99,6 +62,47 @@ defmodule HangmanWeb.GameLive do
       Enum.member?(correct_letters, current_letter) -> true
       true -> false
     end
+  end
+
+  defp starting_state(socket) do
+    socket =
+      assign(
+        socket,
+        word: Helpers.random_word(),
+        correctly_guessed_characters: [],
+        wrong_steps: 1,
+        wrongly_guessed_characters: [],
+        alphabet: [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g",
+          "h",
+          "i",
+          "j",
+          "k",
+          "l",
+          "m",
+          "n",
+          "o",
+          "p",
+          "q",
+          "r",
+          "s",
+          "t",
+          "u",
+          "v",
+          "w",
+          "x",
+          "y",
+          "z"
+        ]
+      )
+
+    socket
   end
 
   defp path_components(step_number) do

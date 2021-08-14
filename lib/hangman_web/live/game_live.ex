@@ -1,11 +1,13 @@
 defmodule HangmanWeb.GameLive do
   use HangmanWeb, :live_view
 
+  alias Hangman.Helpers
+
   def mount(_params, _session, socket) do
     socket =
       assign(
         socket,
-        word: "foobar",
+        word: Helpers.random_word(),
         correctly_guessed_characters: [],
         wrong_steps: 1,
         wrongly_guessed_characters: [],

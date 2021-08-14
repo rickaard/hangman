@@ -9,7 +9,34 @@ defmodule HangmanWeb.GameLive do
         correctly_guessed_characters: [],
         wrong_steps: 1,
         wrongly_guessed_characters: [],
-        alphabet: ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+        alphabet: [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g",
+          "h",
+          "i",
+          "j",
+          "k",
+          "l",
+          "m",
+          "n",
+          "o",
+          "p",
+          "q",
+          "r",
+          "s",
+          "t",
+          "u",
+          "v",
+          "w",
+          "x",
+          "y",
+          "z"
+        ]
       )
 
     {:ok, socket}
@@ -48,8 +75,14 @@ defmodule HangmanWeb.GameLive do
 
   defp increase_wrong_steps(socket) do
     case socket.assigns.wrong_steps do
+      11 ->
+        socket
+
       10 ->
-        socket = put_flash(socket, :error, "You ded 💀💀💀")
+        socket =
+          put_flash(socket, :error, "You ded 💀💀💀")
+          |> assign(wrong_steps: socket.assigns.wrong_steps + 1)
+
         socket
 
       _ ->
@@ -58,16 +91,11 @@ defmodule HangmanWeb.GameLive do
     end
   end
 
-  defp is_letter_taken(wrong_letters, correct_letters, current_letter) do
+  defp is_letter_taken?(wrong_letters, correct_letters, current_letter) do
     cond do
-      Enum.member?(wrong_letters, current_letter) ->
-        "disabled"
-
-      Enum.member?(correct_letters, current_letter) ->
-        "disabled"
-
-      true ->
-        nil
+      Enum.member?(wrong_letters, current_letter) -> true
+      Enum.member?(correct_letters, current_letter) -> true
+      true -> false
     end
   end
 

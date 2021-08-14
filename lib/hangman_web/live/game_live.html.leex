@@ -24,7 +24,7 @@
 
     <button
       class="w-24 uppercase border-gray-700"
-      <%= is_letter_taken(@correctly_guessed_characters, @wrongly_guessed_characters, letter) %>
+      <%= if is_letter_taken?(@correctly_guessed_characters, @wrongly_guessed_characters, letter), do: "disabled" %>
       phx-click="add"
       phx-value-letter="<%= letter %>"
     >

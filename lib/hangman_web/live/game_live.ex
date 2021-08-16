@@ -2,9 +2,23 @@ defmodule HangmanWeb.GameLive do
   use HangmanWeb, :live_view
 
   alias Hangman.Helpers
+  alias HangmanWeb.Presence
+
+  def get_room(room_id), do: "game:#{room_id}"
 
   def mount(_params, _session, socket) do
-    {:ok, starting_state(socket)}
+    channel_amount = Presence.list(get_room(1)) |> map_size
+
+    case channel_amount do
+      # redirect if more than 2 users in same room
+      2 -> {:ok, redirect(socket, to: "/")}
+      _ ->
+        HangmanWeb.Endpoint.subscribe(get_room(1))
+        HangmanWeb.Presence.track(self(), get_room(1), socket.id, %{})
+
+        {:ok, starting_state(socket)}
+    end
+
   end
 
   def handle_event("add", _params, %{assigns: %{game_status: status}} = socket) when status == :over do
@@ -18,8 +32,35 @@ defmodule HangmanWeb.GameLive do
       |> check_if_win()
       |> check_if_dead()
 
+    HangmanWeb.Endpoint.broadcast_from(self(), get_room(1), "add_event", socket.assigns)
     {:noreply, socket}
   end
+
+  def handle_info(%{event: "presence_diff"}, socket) do
+    reader_count = Presence.list(get_room(1)) |> map_size
+    {:noreply, assign(socket, :reader_count, reader_count)}
+  end
+#   def handle_info(
+#     %{event: "presence_diff", payload: %{joins: joins, leaves: leaves}},
+#     %{assigns: %{reader_count: count}} = socket
+#   ) do
+#     reader_count = Presence.list(get_room(1)) |> map_size
+
+#     {:noreply, assign(socket, :reader_count, reader_count)}
+# end
+
+  def handle_info(%{event: "add_event", payload: state}, socket) do
+    {:noreply, assign(
+      socket,
+      correctly_guessed_characters: state.correctly_guessed_characters,
+      game_status: state.game_status,
+      word: state.word,
+      wrong_steps: state.wrong_steps,
+      wrongly_guessed_characters: state.wrongly_guessed_characters,
+    )}
+  end
+
+
 
   defp check_if_win(%{assigns: %{correctly_guessed_characters: correct_list, word: word}} = socket) do
     case Helpers.is_correct_word?(correct_list, word) do
@@ -75,7 +116,8 @@ defmodule HangmanWeb.GameLive do
         correctly_guessed_characters: [],
         wrong_steps: 1,
         wrongly_guessed_characters: [],
-        alphabet: Helpers.get_alphabet()
+        alphabet: Helpers.get_alphabet(),
+        reader_count: HangmanWeb.Presence.list(get_room(1)) |> map_size
       )
 
     socket

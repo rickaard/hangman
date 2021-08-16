@@ -13,6 +13,7 @@ defmodule Hangman.Application do
       HangmanWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Hangman.PubSub},
+      HangmanWeb.Presence,
       # Start the Endpoint (http/https)
       HangmanWeb.Endpoint
       # Start a worker by calling: Hangman.Worker.start_link(arg)

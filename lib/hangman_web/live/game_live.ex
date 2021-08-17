@@ -6,17 +6,17 @@ defmodule HangmanWeb.GameLive do
 
   def get_room(room_id), do: "game:#{room_id}"
 
-  def mount(_params, _session, socket) do
-    channel_amount = Presence.list(get_room(1)) |> map_size
+  def mount(%{"id" => room_id}, _session, socket) do
+    channel_amount = Presence.list(get_room(room_id)) |> map_size
 
     case channel_amount do
       # redirect if more than 2 users in same room
       2 -> {:ok, redirect(socket, to: "/")}
       _ ->
-        HangmanWeb.Endpoint.subscribe(get_room(1))
-        HangmanWeb.Presence.track(self(), get_room(1), socket.id, %{})
+        HangmanWeb.Endpoint.subscribe(get_room(room_id))
+        HangmanWeb.Presence.track(self(), get_room(room_id), socket.id, %{})
 
-        {:ok, starting_state(socket)}
+        {:ok, starting_state(socket, room_id)}
     end
 
   end
@@ -25,19 +25,19 @@ defmodule HangmanWeb.GameLive do
     {:noreply, socket}
   end
 
-  def handle_event("add", %{"letter" => letter}, socket) do
+  def handle_event("add", %{"letter" => letter}, %{assigns: %{room_id: room_id}} = socket) do
     socket =
       socket
       |> add_to_correct_or_wrong_list(letter)
       |> check_if_win()
       |> check_if_dead()
 
-    HangmanWeb.Endpoint.broadcast_from(self(), get_room(1), "add_event", socket.assigns)
+    HangmanWeb.Endpoint.broadcast_from(self(), get_room(room_id), "add_event", socket.assigns)
     {:noreply, socket}
   end
 
-  def handle_info(%{event: "presence_diff"}, socket) do
-    reader_count = Presence.list(get_room(1)) |> map_size
+  def handle_info(%{event: "presence_diff"}, %{assigns: %{room_id: room_id}} = socket) do
+    reader_count = Presence.list(get_room(room_id)) |> map_size
     {:noreply, assign(socket, :reader_count, reader_count)}
   end
 #   def handle_info(
@@ -107,10 +107,11 @@ defmodule HangmanWeb.GameLive do
     end
   end
 
-  defp starting_state(socket) do
+  defp starting_state(socket, room_id) do
     socket =
       assign(
         socket,
+        room_id: room_id,
         game_status: :active,
         word: Helpers.random_word(),
         correctly_guessed_characters: [],

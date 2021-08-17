@@ -1,0 +1,18 @@
+<h1 class="text-5xl font-bold text-center">iex> <span class="text-red-500">:hangman</span></h1>
+
+<div class="bg-white p-8 my-16 mx-auto max-w-screen-sm min-w-min">
+  <form phx-submit>
+    <label>
+      Enter your name:
+      <input type="text" name="name" value="">
+    </label>
+    <label>
+      Game room-ID:
+      <input type="text" name="room_id" value="">
+    </label>
+    <button type="submit">Go to room</button>
+  </form>
+  <%= link to: Routes.live_path(@socket, HangmanWeb.GameLive, 1337) do%>
+    Go to game #1337
+  <% end %>
+</div>

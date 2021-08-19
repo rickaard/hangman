@@ -35,5 +35,8 @@
 </div>
 
 <div>
-  <%= @reader_count %>
+  <h3 class="font-bold">Users:</h3>
+  <%= for user <- @users do %>
+    <p><%= user.name %></p>
+  <% end %>
 </div>

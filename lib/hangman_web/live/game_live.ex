@@ -4,21 +4,34 @@ defmodule HangmanWeb.GameLive do
   alias Hangman.Helpers
   alias HangmanWeb.Presence
 
+  # alias Hangman.Rooms
+
   def get_room(room_id), do: "game:#{room_id}"
 
-  def mount(%{"id" => room_id}, _session, socket) do
+  def mount(%{"id" => room_id, "name" => name} = params, session, socket) do
+    IO.inspect socket, label: "socket mount"
+    IO.inspect params, label: "params mount"
+    IO.inspect session, label: "session mount"
+
     channel_amount = Presence.list(get_room(room_id)) |> map_size
 
     case channel_amount do
-      # redirect if more than 2 users in same room
-      2 -> {:ok, redirect(socket, to: "/")}
+      # redirect back if more than 2 users in same room
+      2 ->
+        socket = put_flash(socket, :error, "This room is full 😢")
+        {:ok, redirect(socket, to: "/game/")}
       _ ->
         HangmanWeb.Endpoint.subscribe(get_room(room_id))
-        HangmanWeb.Presence.track(self(), get_room(room_id), socket.id, %{})
+        HangmanWeb.Presence.track(self(), get_room(room_id), socket.id, %{name: name})
 
         {:ok, starting_state(socket, room_id)}
     end
 
+  end
+
+  def mount(_params, _session, socket) do
+    socket = put_flash(socket, :error, "No name provided")
+    {:ok, redirect(socket, to: "/game/")}
   end
 
   def handle_event("add", _params, %{assigns: %{game_status: status}} = socket) when status == :over do
@@ -38,16 +51,18 @@ defmodule HangmanWeb.GameLive do
 
   def handle_info(%{event: "presence_diff"}, %{assigns: %{room_id: room_id}} = socket) do
     reader_count = Presence.list(get_room(room_id)) |> map_size
-    {:noreply, assign(socket, :reader_count, reader_count)}
-  end
-#   def handle_info(
-#     %{event: "presence_diff", payload: %{joins: joins, leaves: leaves}},
-#     %{assigns: %{reader_count: count}} = socket
-#   ) do
-#     reader_count = Presence.list(get_room(1)) |> map_size
 
-#     {:noreply, assign(socket, :reader_count, reader_count)}
-# end
+    # Map over list the tracking list of users
+    # Only return the first element, i.e the name
+    users_in_room = Presence.list(get_room(room_id))
+      |> Enum.map(fn {_user_id, data} ->
+        data[:metas]
+        |> List.first()
+      end)
+
+    {:noreply, assign(socket, reader_count: reader_count, users: users_in_room)}
+  end
+
 
   def handle_info(%{event: "add_event", payload: state}, socket) do
     {:noreply, assign(
@@ -118,7 +133,8 @@ defmodule HangmanWeb.GameLive do
         wrong_steps: 1,
         wrongly_guessed_characters: [],
         alphabet: Helpers.get_alphabet(),
-        reader_count: HangmanWeb.Presence.list(get_room(1)) |> map_size
+        reader_count: HangmanWeb.Presence.list(get_room(1)) |> map_size,
+        users: []
       )
 
     socket

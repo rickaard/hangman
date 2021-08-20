@@ -86,7 +86,7 @@ input[type='submit'][disabled] {
     opacity: .5
 }
 
-button[disabled]::before {
+.letter-button[disabled]::before {
     content: "";
     height: 3.7rem;
     background: red;
@@ -99,7 +99,7 @@ button[disabled]::before {
     left: 2.8rem;
 }
 
-button[disabled]::after {
+.letter-button[disabled]::after {
     content: "";
     height: 3.7rem;
     background: red;

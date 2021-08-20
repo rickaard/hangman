@@ -23,7 +23,7 @@
   <%= for letter <- @alphabet do %>
 
     <button
-      class="w-24 uppercase border-gray-700"
+      class="letter-button w-24 uppercase border-gray-700"
       <%= if is_letter_taken?(@correctly_guessed_characters, @wrongly_guessed_characters, letter), do: "disabled" %>
       phx-click="add"
       phx-value-letter="<%= letter %>"

@@ -8,7 +8,8 @@ defmodule Hangman.Application do
   def start(_type, _args) do
     children = [
       # Start the Ecto repository
-      Hangman.Repo,
+      # Remove the usage of Ecto / DB
+      # Hangman.Repo,
       # Start the Telemetry supervisor
       HangmanWeb.Telemetry,
       # Start the PubSub system

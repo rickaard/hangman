@@ -8,10 +8,13 @@ defmodule HangmanWeb.GameLive do
 
   def get_room(room_id), do: "game:#{room_id}"
 
-  def mount(%{"id" => room_id, "name" => name} = params, session, socket) do
-    IO.inspect socket, label: "socket mount"
-    IO.inspect params, label: "params mount"
-    IO.inspect session, label: "session mount"
+  def mount(%{"id" => room_id, "name" => name}, _session, socket) do
+    # IO.inspect socket, label: "socket mount"
+    # IO.inspect params, label: "params mount"
+    # IO.inspect session, label: "session mount"
+
+    ## ***** ##
+    # Add room info (word, users, id) to Mnesia
 
     channel_amount = Presence.list(get_room(room_id)) |> map_size
 
@@ -123,6 +126,7 @@ defmodule HangmanWeb.GameLive do
   end
 
   defp starting_state(socket, room_id) do
+
     socket =
       assign(
         socket,

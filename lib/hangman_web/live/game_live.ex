@@ -13,9 +13,6 @@ defmodule HangmanWeb.GameLive do
     # IO.inspect params, label: "params mount"
     # IO.inspect session, label: "session mount"
 
-    ## ***** ##
-    # Add room info (word, users, id) to Mnesia
-
     channel_amount = Presence.list(get_room(room_id)) |> map_size
 
     case channel_amount do
@@ -27,7 +24,23 @@ defmodule HangmanWeb.GameLive do
         HangmanWeb.Endpoint.subscribe(get_room(room_id))
         HangmanWeb.Presence.track(self(), get_room(room_id), socket.id, %{name: name})
 
-        {:ok, starting_state(socket, room_id)}
+
+        ## ALSO UPDATE THE RECORD FROM MNESIA WITH SECOND USER
+        ## MAKE IT POSSIBLE TO UPDATE RECORD WITH NEW WORD
+        ## IN "presence_diff" - MAKE SURE TO UPDATE RECORD WHEN USER(s) LEAVE ROOM
+        ## DELETE RECORD IF NO USER LEFT IN ROOM
+        case Hangman.Room.get_room_by_code(room_id) do
+          %{correct_word: correct_word} ->
+            IO.puts "** room exists **"
+            {:ok, starting_state(socket, room_id, correct_word)}
+
+          nil ->
+            IO.puts "** room deos not exists **"
+            correct_word = Helpers.random_word()
+            Hangman.Room.create_room(room_id, [name], correct_word)
+            {:ok, starting_state(socket, room_id, correct_word)}
+        end
+
     end
 
   end
@@ -125,14 +138,14 @@ defmodule HangmanWeb.GameLive do
     end
   end
 
-  defp starting_state(socket, room_id) do
+  defp starting_state(socket, room_id, word) do
 
     socket =
       assign(
         socket,
         room_id: room_id,
         game_status: :active,
-        word: Helpers.random_word(),
+        word: word,
         correctly_guessed_characters: [],
         wrong_steps: 1,
         wrongly_guessed_characters: [],

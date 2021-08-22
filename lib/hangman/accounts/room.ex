@@ -10,6 +10,7 @@ defmodule Hangman.Room do
     # dont allow to create record with same room_code at the same time
     case get_room_by_code(room_code) do
       %{} ->
+        IO.puts "** ROOM EXISTS ** "
         {:error, "Room already exists"}
 
       _ ->
@@ -17,7 +18,14 @@ defmodule Hangman.Room do
           %Room{room_code: room_code, current_user: users, correct_word: word}
           |> Room.write()
         end
+        IO.inspect(room, label: "** ROOM CREATED: **")
         {:ok, room}
+    end
+  end
+
+  def get_all_rooms() do
+    Amnesia.transaction do
+      Room.last()
     end
   end
 

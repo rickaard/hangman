@@ -35,7 +35,10 @@
 </div>
 
 <div>
-  <h3 class="font-bold">Users:</h3>
+  <h3>
+    Users in room
+      <span class="font-bold"><%= @room_id %></span>:
+    </h3>
   <%= for user <- @users do %>
     <p><%= user.name %></p>
   <% end %>

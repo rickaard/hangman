@@ -4,7 +4,7 @@ defmodule Hangman.Accounts.User do
 
   schema "users" do
     field :name, :string
-    field :room_id, :integer
+    field :room_id, :string
 
     timestamps()
   end
@@ -15,6 +15,6 @@ defmodule Hangman.Accounts.User do
     |> cast(attrs, [:name, :room_id])
     |> validate_required([:name, :room_id])
     |> validate_length(:name, min: 2)
-    |> validate_number(:room_id, greater_than: 0, message: "Not a valid room ID.")
+    |> validate_length(:room_id, is: 4, message: "must be 4 characters")
   end
 end

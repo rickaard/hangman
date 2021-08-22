@@ -39,3 +39,6 @@ document.addEventListener('keydown', event => {
   document.querySelector(`button[phx-value-letter="${key}"]`)?.click()
 })
 
+document.querySelector('#user_room_id')?.addEventListener('input', event => {
+  event.target.value = event.target.value.toUpperCase();
+})

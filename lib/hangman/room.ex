@@ -6,7 +6,7 @@ defmodule Hangman.Room do
 
   alias Database.Room
 
-  def create_room(room_code, users, word) do
+  def create_room(room_code, user, word) do
     # dont allow to create record with same room_code at the same time
     case get_room_by_code(room_code) do
       %{} ->
@@ -15,7 +15,7 @@ defmodule Hangman.Room do
 
       _ ->
         room = Amnesia.transaction do
-          %Room{room_code: room_code, current_user: users, correct_word: word}
+          %Room{room_code: room_code, current_users: [user], correct_word: word}
           |> Room.write()
         end
         IO.inspect(room, label: "** ROOM CREATED: **")
@@ -23,9 +23,32 @@ defmodule Hangman.Room do
     end
   end
 
-  def get_all_rooms() do
+  def add_user_to_room(code, user) do
+    room_id = get_room_id_by_code(code)
+
+    Amnesia.transaction do
+      room = Room.read(room_id)
+      new_users_list = room.current_users ++ [user]
+
+      %{room | current_users: new_users_list}
+      |> Room.write
+    end
+  end
+
+  def get_last_room() do
     Amnesia.transaction do
       Room.last()
+    end
+  end
+
+  def update_word(room_code, word) do
+    room_id = get_room_id_by_code(room_code)
+
+    Amnesia.transaction do
+      room = Room.read(room_id)
+
+      %{room | correct_word: word}
+      |> Room.write
     end
   end
 
@@ -70,6 +93,11 @@ defmodule Hangman.Room do
   def remove_room_by_code(code) do
     code
     |> get_room_id_by_code
-    |> remove_room_by_id
+
+    case get_room_id_by_code(code) do
+      nil ->
+        {:error, "no room with that code"}
+      id -> remove_room_by_id(id)
+    end
   end
 end

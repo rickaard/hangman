@@ -4,14 +4,16 @@ defmodule HangmanWeb.GameLive do
   alias Hangman.Helpers
   alias HangmanWeb.Presence
 
-  # alias Hangman.Rooms
+  alias Hangman.Room
+
+  ## TODO:
+  ## MAKE IT POSSIBLE TO UPDATE RECORD WITH NEW WORD
+  ## IN "presence_diff" - MAKE SURE TO UPDATE RECORD WHEN USER(s) LEAVE ROOM
+  ## DELETE RECORD IF NO USER LEFT IN ROOM
 
   def get_room(room_id), do: "game:#{room_id}"
 
   def mount(%{"id" => room_id, "name" => name}, _session, socket) do
-    # IO.inspect socket, label: "socket mount"
-    # IO.inspect params, label: "params mount"
-    # IO.inspect session, label: "session mount"
 
     channel_amount = Presence.list(get_room(room_id)) |> map_size
 
@@ -24,20 +26,20 @@ defmodule HangmanWeb.GameLive do
         HangmanWeb.Endpoint.subscribe(get_room(room_id))
         HangmanWeb.Presence.track(self(), get_room(room_id), socket.id, %{name: name})
 
+        case Room.get_room_by_code(room_id) do
+          %{correct_word: correct_word} = room ->
+            IO.inspect room, label: "** room exists **"
 
-        ## ALSO UPDATE THE RECORD FROM MNESIA WITH SECOND USER
-        ## MAKE IT POSSIBLE TO UPDATE RECORD WITH NEW WORD
-        ## IN "presence_diff" - MAKE SURE TO UPDATE RECORD WHEN USER(s) LEAVE ROOM
-        ## DELETE RECORD IF NO USER LEFT IN ROOM
-        case Hangman.Room.get_room_by_code(room_id) do
-          %{correct_word: correct_word} ->
-            IO.puts "** room exists **"
+            # update Mnesia DB with new user
+            Room.add_user_to_room(room_id, %{name: name})
             {:ok, starting_state(socket, room_id, correct_word)}
 
           nil ->
-            IO.puts "** room deos not exists **"
+            IO.puts "** room does not exists **"
             correct_word = Helpers.random_word()
-            Hangman.Room.create_room(room_id, [name], correct_word)
+
+            # Add Mnesia DB record with room code and user
+            Room.create_room(room_id, %{name: name}, correct_word)
             {:ok, starting_state(socket, room_id, correct_word)}
         end
 
@@ -46,7 +48,7 @@ defmodule HangmanWeb.GameLive do
   end
 
   def mount(_params, _session, socket) do
-    socket = put_flash(socket, :error, "No name provided")
+    socket = put_flash(socket, :error, "No name provided...")
     {:ok, redirect(socket, to: "/game/")}
   end
 

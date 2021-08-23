@@ -41,7 +41,9 @@ defmodule Hangman.Helpers do
 
     1..code_length
     |> Enum.map(fn _item -> Enum.random(charset) end)
-    |> Enum.join
+    |> to_string
   end
+
+  def is_room_code_valid(code), do: String.length(code) == 4
 
 end

@@ -13,3 +13,7 @@ header {
 h1 {
     @apply text-center text-cool-gray-900 font-extrabold text-4xl mb-8;
 }
+
+.invalid-feedback {
+    @apply block mt-1 text-xl text-red-700;
+}

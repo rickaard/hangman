@@ -2,10 +2,10 @@
 
   <%= form_for @changeset, "#", [phx_change: :validate, phx_submit: :enter_room], fn f -> %>
     <%= label f, :name %>
-    <%= text_input f, :name, placeholder: "Your name" %>
+    <%= text_input f, :name, placeholder: "Your name", autocomplete: "off" %>
     <%= error_tag f, :name %>
     <%= label f, :room_id %>
-    <%= text_input f, :room_id, placeholder: "Enter the room ID" %>
+    <%= text_input f, :room_id, placeholder: "Enter the room ID", autocomplete: "off" %>
     <%= error_tag f, :room_id %>
 
     <%= submit "Enter room ➡", class: "my-4 px-4", disabled: !@changeset.valid? %>

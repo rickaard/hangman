@@ -7,7 +7,6 @@ defmodule HangmanWeb.GameLive do
   alias Hangman.Room
 
   ## TODO:
-  ## MAKE IT POSSIBLE TO UPDATE RECORD WITH NEW WORD
   ## IN "presence_diff" - MAKE SURE TO UPDATE RECORD WHEN USER(s) LEAVE ROOM
   ## DELETE RECORD IF NO USER LEFT IN ROOM
 
@@ -22,6 +21,7 @@ defmodule HangmanWeb.GameLive do
       2 ->
         socket = put_flash(socket, :error, "This room is full 😢")
         {:ok, redirect(socket, to: "/game/")}
+
       _ ->
         HangmanWeb.Endpoint.subscribe(get_room(room_id))
         HangmanWeb.Presence.track(self(), get_room(room_id), socket.id, %{name: name})

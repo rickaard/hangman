@@ -10,14 +10,16 @@ defmodule Hangman.Room do
     # dont allow to create record with same room_code at the same time
     case get_room_by_code(room_code) do
       %{} ->
-        IO.puts "** ROOM EXISTS ** "
+        IO.puts("** ROOM EXISTS ** ")
         {:error, "Room already exists"}
 
       _ ->
-        room = Amnesia.transaction do
-          %Room{room_code: room_code, current_users: [user], correct_word: word}
-          |> Room.write()
-        end
+        room =
+          Amnesia.transaction do
+            %Room{room_code: room_code, current_users: [user], correct_word: word}
+            |> Room.write()
+          end
+
         IO.inspect(room, label: "** ROOM CREATED: **")
         {:ok, room}
     end
@@ -28,10 +30,23 @@ defmodule Hangman.Room do
 
     Amnesia.transaction do
       room = Room.read(room_id)
-      new_users_list = room.current_users ++ [user]
 
-      %{room | current_users: new_users_list}
-      |> Room.write
+      # Don't add the user to the DB if the room allready has the name
+      # inside the record. This will prevent the room.current_users map to grow as hell
+      # if the user refreshes the page etc
+      case Enum.member?(room.current_users, user) do
+        true ->
+          {:ok, room}
+
+        false ->
+          new_users_list = room.current_users ++ [user]
+
+          updated_room =
+            %{room | current_users: new_users_list}
+            |> Room.write()
+
+          {:ok, updated_room}
+      end
     end
   end
 
@@ -48,27 +63,26 @@ defmodule Hangman.Room do
       room = Room.read(room_id)
 
       %{room | correct_word: word}
-      |> Room.write
+      |> Room.write()
     end
   end
 
   def get_all_rooms_by_code(code) do
     Amnesia.transaction do
-      Room.where room_code == code
+      Room.where(room_code == code)
     end
   end
 
   # just for debugging..
   def get_amount_of_records_in_table do
     Amnesia.transaction do
-      Room.count
+      Room.count()
     end
   end
 
-
   def get_room_id_by_code(code) do
     Amnesia.transaction do
-      Room.where(room_code == code, select: id) |> Amnesia.Selection.values |> List.first
+      Room.where(room_code == code, select: id) |> Amnesia.Selection.values() |> List.first()
     end
   end
 
@@ -97,7 +111,9 @@ defmodule Hangman.Room do
     case get_room_id_by_code(code) do
       nil ->
         {:error, "no room with that code"}
-      id -> remove_room_by_id(id)
+
+      id ->
+        remove_room_by_id(id)
     end
   end
 end

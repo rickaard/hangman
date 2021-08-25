@@ -1,14 +1,32 @@
 <div class="bg-white p-8 my-16 mx-auto max-w-screen-sm min-w-min">
 
+    <div class="flex flex-row justify-around mb-8">
+      <button phx-click="change-tab" phx-value-type="joining" class="tab-button hover:bg-transparent hover:text-black <%= if not @is_creating, do: "tab-button--active", else: "tab-button--inactive" %>">Join room</button>
+      <button phx-click="change-tab" phx-value-type="creating" class="tab-button hover:bg-transparent hover:text-black <%= if @is_creating, do: "tab-button--active", else: "tab-button--inactive" %>">Create new room</button>
+    </div>
+
   <%= form_for @changeset, "#", [phx_change: :validate, phx_submit: :enter_room], fn f -> %>
     <%= label f, :name %>
     <%= text_input f, :name, placeholder: "Your name", autocomplete: "off" %>
     <%= error_tag f, :name %>
-    <%= label f, :room_id %>
-    <%= text_input f, :room_id, placeholder: "Enter the room ID", autocomplete: "off" %>
-    <%= error_tag f, :room_id %>
 
-    <%= submit "Enter room ➡", class: "my-4 px-4", disabled: !@changeset.valid? %>
+    <%= if @is_creating do %>
+      <%= hidden_input f, :room_id %>
+    <% else %>
+      <%= label f, :room_id %>
+      <%= text_input f, :room_id, placeholder: "Enter the room ID", autocomplete: "off" %>
+      <%= error_tag f, :room_id %>
+    <% end %>
+
+
+    <%= if @is_creating do %>
+      <%= submit "Create room ➡", class: "my-4 px-4", disabled: !@changeset.valid? %>
+    <% else %>
+      <%= submit "Enter room ➡", class: "my-4 px-4", disabled: !@changeset.valid? %>
+    <% end %>
+
+
+
   <% end %>
 
 </div>

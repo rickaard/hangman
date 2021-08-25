@@ -17,3 +17,21 @@ h1 {
 .invalid-feedback {
     @apply block mt-1 text-xl text-red-700;
 }
+
+.tab-button {
+    @apply text-3xl border-b-2;
+}
+
+.tab-button:hover,
+.tab-button:focus,
+.tab-button:active {
+    @apply bg-transparent text-black border-red-500 border-b-2;
+}
+
+.tab-button--active {
+    @apply border-0 rounded-none border-b-2 border-red-500;
+}
+
+.tab-button--inactive {
+    @apply border-0 rounded-none;
+}

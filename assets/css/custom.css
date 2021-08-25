@@ -3,7 +3,7 @@ body {
 }
 
 header {
-    @apply mb-8;
+    @apply mb-8 antialiased relative bg-cool-gray-200 font-sans;
 }
 
 .container {

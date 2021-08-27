@@ -13,7 +13,6 @@ defmodule HangmanWeb.GameLive do
   def get_room(room_id), do: "game:#{room_id}"
 
   def mount(%{"id" => room_id, "name" => name}, _session, socket) do
-
     channel_amount = Presence.list(get_room(room_id)) |> map_size
 
     case channel_amount do
@@ -28,23 +27,24 @@ defmodule HangmanWeb.GameLive do
 
         case Room.get_room_by_code(room_id) do
           %{correct_word: correct_word} = room ->
-            IO.inspect room, label: "** room exists **"
+            IO.inspect(room, label: "** room exists **")
 
             # update Mnesia DB with new user
-            Room.add_user_to_room(room_id, %{name: name})
+            new_user = %{name: name, points: 0, picked_word: false}
+            Room.add_user_to_room(room_id, new_user)
             {:ok, starting_state(socket, room_id, correct_word)}
 
           nil ->
-            IO.puts "** room does not exists **"
+            IO.puts("** room does not exists **")
             correct_word = Helpers.random_word()
 
-            # Add Mnesia DB record with room code and user
-            Room.create_room(room_id, %{name: name}, correct_word)
+            new_user = %{name: name, points: 0, picked_word: true}
+
+            # Add Mnesia DB record with room code and new user
+            Room.create_room(room_id, new_user, correct_word)
             {:ok, starting_state(socket, room_id, correct_word)}
         end
-
     end
-
   end
 
   def mount(_params, _session, socket) do
@@ -52,7 +52,8 @@ defmodule HangmanWeb.GameLive do
     {:ok, redirect(socket, to: "/game/")}
   end
 
-  def handle_event("add", _params, %{assigns: %{game_status: status}} = socket) when status == :over do
+  def handle_event("add", _params, %{assigns: %{game_status: status}} = socket)
+      when status == :over do
     {:noreply, socket}
   end
 
@@ -67,39 +68,54 @@ defmodule HangmanWeb.GameLive do
     {:noreply, socket}
   end
 
-  def handle_info(%{event: "presence_diff"}, %{assigns: %{room_id: room_id}} = socket) do
+  def handle_info(%{event: "presence_diff"} = event, %{assigns: %{room_id: room_id}} = socket) do
     reader_count = Presence.list(get_room(room_id)) |> map_size
-
+    IO.inspect(event, label: "event")
     # Map over list the tracking list of users
     # Only return the first element, i.e the name
-    users_in_room = Presence.list(get_room(room_id))
+    users_in_room =
+      Presence.list(get_room(room_id))
       |> Enum.map(fn {_user_id, data} ->
         data[:metas]
         |> List.first()
       end)
 
+    IO.inspect(users_in_room, label: "users_in_room")
+
     {:noreply, assign(socket, reader_count: reader_count, users: users_in_room)}
   end
 
-
   def handle_info(%{event: "add_event", payload: state}, socket) do
-    {:noreply, assign(
-      socket,
-      correctly_guessed_characters: state.correctly_guessed_characters,
-      game_status: state.game_status,
-      word: state.word,
-      wrong_steps: state.wrong_steps,
-      wrongly_guessed_characters: state.wrongly_guessed_characters,
-    )}
+    {:noreply,
+     assign(
+       socket,
+       correctly_guessed_characters: state.correctly_guessed_characters,
+       game_status: state.game_status,
+       word: state.word,
+       wrong_steps: state.wrong_steps,
+       wrongly_guessed_characters: state.wrongly_guessed_characters
+     )}
   end
 
+  defp add_points_to_user(%{assigns: %{users: users}} = socket) do
+    IO.inspect(users, label: "add_points_to_user")
+    # {:noreply, socket}
+    socket
+  end
 
-
-  defp check_if_win(%{assigns: %{correctly_guessed_characters: correct_list, word: word}} = socket) do
+  defp check_if_win(
+         %{assigns: %{correctly_guessed_characters: correct_list, word: word}} = socket
+       ) do
     case Helpers.is_correct_word?(correct_list, word) do
       true ->
-        socket = put_flash(socket, :info, "You won! ✔✔✔") |> assign(game_status: :over)
+        socket =
+          socket
+          |> put_flash(:info, "You won! ✔✔✔")
+          |> assign(game_status: :over)
+          |> add_points_to_user
+
         socket
+
       false ->
         socket
     end
@@ -108,21 +124,37 @@ defmodule HangmanWeb.GameLive do
   defp check_if_dead(%{assigns: %{wrong_steps: wrong_steps}} = socket) do
     case wrong_steps do
       11 ->
-        socket = put_flash(socket, :error, "You lost 💀💀💀 The word was \"#{String.upcase(socket.assigns.word)}\"") |> assign(game_status: :over)
+        socket =
+          put_flash(
+            socket,
+            :error,
+            "You lost 💀💀💀 The word was \"#{String.upcase(socket.assigns.word)}\""
+          )
+          |> assign(game_status: :over)
+
         socket
+
       _ ->
         socket
     end
   end
 
-  defp add_to_correct_or_wrong_list(%{assigns: %{correctly_guessed_characters: correct_list}} = socket, letter) do
+  defp add_to_correct_or_wrong_list(
+         %{assigns: %{correctly_guessed_characters: correct_list}} = socket,
+         letter
+       ) do
     case String.contains?(socket.assigns.word, letter) do
       true ->
         socket = assign(socket, correctly_guessed_characters: correct_list ++ [letter])
         socket
 
       false ->
-        socket = increase_wrong_steps(socket) |> assign(wrongly_guessed_characters: socket.assigns.wrongly_guessed_characters ++ [letter])
+        socket =
+          increase_wrong_steps(socket)
+          |> assign(
+            wrongly_guessed_characters: socket.assigns.wrongly_guessed_characters ++ [letter]
+          )
+
         socket
     end
   end
@@ -141,7 +173,6 @@ defmodule HangmanWeb.GameLive do
   end
 
   defp starting_state(socket, room_id, word) do
-
     socket =
       assign(
         socket,

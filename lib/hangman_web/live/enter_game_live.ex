@@ -40,8 +40,7 @@ defmodule HangmanWeb.Enter_GameLive do
     {:noreply, assign(socket, is_creating: false, changeset: changeset)}
   end
 
-  def handle_event("change-tab", %{"type" => "creating"} = params, socket) do
-    IO.inspect params, label: "change-tab - creating"
+  def handle_event("change-tab", %{"type" => "creating"}, socket) do
     changeset =
       %User{}
       |> User.changeset(%{room_id: Helpers.generate_random_code(4)})

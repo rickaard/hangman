@@ -56,6 +56,15 @@ defmodule Hangman.Room do
     end
   end
 
+  def get_user_from_room(code, user) do
+    Amnesia.transaction do
+      Room.where(room_code == code, select: current_users)
+      |> Amnesia.Selection.values()
+      |> List.first()
+      |> Enum.find(nil, fn %{name: name} = _user -> String.trim(name) == String.trim(user) end)
+    end
+  end
+
   def update_word(room_code, word) do
     room_id = get_room_id_by_code(room_code)
 

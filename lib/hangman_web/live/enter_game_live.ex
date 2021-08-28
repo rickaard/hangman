@@ -19,7 +19,6 @@ defmodule HangmanWeb.Enter_GameLive do
   end
 
   def handle_event("validate", %{"user" => user_params} = _user_params, socket) do
-    IO.inspect user_params
     changeset =
       %User{}
       |> User.changeset(user_params)

@@ -38,6 +38,6 @@
       <span class="font-bold"><%= @room_id %></span>:
     </h3>
   <%= for user <- @users do %>
-    <p><%= user.name %></p>
+    <p><%= user.name %> - points: <%= user.points %></p>
   <% end %>
 </div>

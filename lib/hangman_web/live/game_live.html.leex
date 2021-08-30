@@ -1,4 +1,17 @@
-<div class="bg-white p-8 my-16 mx-auto max-w-screen-sm min-w-min">
+<%= if @game_status != :active do %>
+  <%= live_component(@socket, HangmanWeb.ModalComponent, id: :modal, word: @word, status: @game_status, room_code: @room_id, user: @user ) %>
+<% end %>
+
+<section class="bg-white p-8 my-16 mx-auto max-w-screen-sm min-w-min">
+  <div class="flex justify-between flex-row">
+    <%= for user <- @users do %>
+      <div>
+        <h5 class="font-bold text-2xl"><%= String.capitalize(user.name) %></h5>
+        <p>Points: <%= user.points %></p>
+      </div>
+    <% end %>
+  </div>
+
   <svg class="hangman mx-auto" width="304" height="288" viewBox="0 0 304 288" fill="none" xmlns="http://www.w3.org/2000/svg">
     <%= for step <- 1..@wrong_steps do %>
       <%= path_components(step) %>
@@ -15,13 +28,13 @@
     <% end %>
   </div>
 
-</div>
+</section>
 
-<div class="my-4 mx-auto max-w-screen-sm min-w-min flex flex-row flex-wrap gap-4 justify-center letter-button--wrapper">
+<section class="my-4 mx-auto max-w-screen-sm min-w-min flex flex-row flex-wrap gap-4 justify-center letter-button--wrapper">
   <%= for letter <- @alphabet do %>
 
     <button
-      class="letter-button w-24 uppercase border-gray-700"
+      class="letter-button w-24 uppercase border-gray-700 <%= if @user.picked_word, do: "opacity-10" %>"
       <%= if is_letter_taken?(@correctly_guessed_characters, @wrongly_guessed_characters, letter), do: "disabled" %>
       phx-click="add"
       phx-value-letter="<%= letter %>"
@@ -30,14 +43,9 @@
     </button>
 
   <% end %>
-</div>
+</section>
 
 <div>
-  <h3>
-    Users in room
-      <span class="font-bold"><%= @room_id %></span>:
-    </h3>
-  <%= for user <- @users do %>
-    <p><%= user.name %> - points: <%= user.points %></p>
-  <% end %>
+  name: <%= @user.name %>
+  picked_word: <%= @user.picked_word %>
 </div>

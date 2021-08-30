@@ -7,6 +7,9 @@ module.exports = {
   ],
   darkMode: false, // or 'media' or 'class'
   theme: {
+    minHeight: {
+      '300': '300px',
+    },
     fontFamily: {
       sans: [
         // "system-ui",

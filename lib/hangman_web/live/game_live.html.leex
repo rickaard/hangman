@@ -1,5 +1,5 @@
 <%= if @game_status != :active do %>
-  <%= live_component(@socket, HangmanWeb.ModalComponent, id: :modal, word: @word, status: @game_status, room_code: @room_id, user: @user ) %>
+  <%= live_component(@socket, HangmanWeb.ModalComponent, id: :modal, status: @game_status, room_code: @room_id, user: @user, parent_flash: @flash ) %>
 <% end %>
 
 <section class="bg-white p-8 my-16 mx-auto max-w-screen-sm min-w-min">
@@ -44,8 +44,3 @@
 
   <% end %>
 </section>
-
-<div>
-  name: <%= @user.name %>
-  picked_word: <%= @user.picked_word %>
-</div>

@@ -41,7 +41,6 @@ defmodule HangmanWeb.GameLive do
   end
 
   def add_user_to_room(room_code, name, socket) do
-    IO.inspect(socket.id, label: "add_user_to_room - socket.id")
     HangmanWeb.Endpoint.subscribe(get_room(room_code))
     # HangmanWeb.Presence.track(self(), get_room(room_code), socket.id, %{name: name, points: 0})
 
@@ -86,7 +85,6 @@ defmodule HangmanWeb.GameLive do
   end
 
   def handle_event("add", %{"letter" => letter}, %{assigns: %{room_id: room_id}} = socket) do
-    IO.inspect(socket.assigns.user, label: "dsf")
 
     socket =
       socket

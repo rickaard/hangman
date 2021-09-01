@@ -14,10 +14,15 @@ defmodule HangmanWeb.GameLive do
 
   def mount(%{"id" => room_id, "name" => name}, _session, socket) do
     channel_amount = Presence.list(get_room(room_id)) |> map_size
+    room = Room.get_room_by_code(room_id)
 
     cond do
       channel_amount >= 2 ->
         socket = put_flash(socket, :error, "Sorry, this room is full 😢")
+        {:ok, redirect(socket, to: "/game/")}
+
+      is_nil(room) ->
+        socket = put_flash(socket, :error, "No room with that ID started yet 😢")
         {:ok, redirect(socket, to: "/game/")}
 
       connected?(socket) ->
@@ -42,35 +47,32 @@ defmodule HangmanWeb.GameLive do
 
   def add_user_to_room(room_code, name, socket) do
     HangmanWeb.Endpoint.subscribe(get_room(room_code))
-    # HangmanWeb.Presence.track(self(), get_room(room_code), socket.id, %{name: name, points: 0})
+    user_count = Room.get_all_users_from_room(room_code) |> Enum.count()
 
-    case Room.get_room_by_code(room_code) do
-      %{correct_word: correct_word} ->
-        case Room.get_user_from_room(room_code, name) do
-          nil ->
-            new_user = %{name: name, points: 0, picked_word: false}
-            Room.add_user_to_room(room_code, new_user)
+    # if no users is added to the room already
+    # make sure the first user gets to pick the word first
+    if user_count == 0 do
+      new_user = %{name: name, points: 0, picked_word: true}
+      Room.add_user_to_room(room_code, new_user)
 
-            socket
-            |> starting_state(room_code, correct_word, new_user)
-            |> track_user(room_code, new_user)
+      socket
+      |> starting_state(room_code, "", new_user)
+      |> track_user(room_code, new_user)
+    else
+      case Room.get_user_from_room(room_code, name) do
+        nil ->
+          new_user = %{name: name, points: 0, picked_word: false}
+          Room.add_user_to_room(room_code, new_user)
 
-          user ->
-            socket
-            |> starting_state(room_code, correct_word, user)
-            |> track_user(room_code, user)
-        end
+          socket
+          |> starting_state(room_code, "", new_user)
+          |> track_user(room_code, new_user)
 
-      nil ->
-        # correct_word = Helpers.random_word()
-        correct_word = ""
-        new_user = %{name: name, points: 0, picked_word: true}
-
-        Room.create_room(room_code, new_user, correct_word)
-
-        socket
-        |> starting_state(room_code, correct_word, new_user)
-        |> track_user(room_code, new_user)
+        user ->
+          socket
+          |> starting_state(room_code, "", user)
+          |> track_user(room_code, user)
+      end
     end
   end
 
@@ -85,7 +87,6 @@ defmodule HangmanWeb.GameLive do
   end
 
   def handle_event("add", %{"letter" => letter}, %{assigns: %{room_id: room_id}} = socket) do
-
     socket =
       socket
       |> add_to_correct_or_wrong_list(letter)
@@ -133,7 +134,13 @@ defmodule HangmanWeb.GameLive do
      )}
   end
 
-  def handle_info(%{event: "update_word",payload: %{status: status, word: word, updated_users: updated_users}},socket) do
+  def handle_info(
+        %{
+          event: "update_word",
+          payload: %{status: status, word: word, updated_users: updated_users}
+        },
+        socket
+      ) do
     updated_user =
       Enum.find(updated_users, socket.assigns.user, fn user ->
         user.name == socket.assigns.user.name

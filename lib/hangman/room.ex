@@ -25,6 +25,22 @@ defmodule Hangman.Room do
     end
   end
 
+  def create_empty_room(room_code) do
+    case get_room_by_code(room_code) do
+      %{} ->
+        {:error, "Room already exists"}
+
+      _ ->
+        room =
+          Amnesia.transaction do
+            %Room{room_code: room_code, current_users: [], correct_word: ""}
+            |> Room.write()
+          end
+
+        {:ok, room}
+    end
+  end
+
   def add_user_to_room(code, user) do
     room_id = get_room_id_by_code(code)
 
@@ -62,6 +78,14 @@ defmodule Hangman.Room do
       |> Amnesia.Selection.values()
       |> List.first()
       |> Enum.find(nil, fn %{name: name} = _user -> String.trim(name) == String.trim(user) end)
+    end
+  end
+
+  def get_all_users_from_room(code) do
+    Amnesia.transaction do
+      Room.where(room_code == code, select: current_users)
+      |> Amnesia.Selection.values()
+      |> List.first()
     end
   end
 

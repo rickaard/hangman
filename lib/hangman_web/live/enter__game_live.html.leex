@@ -1,3 +1,11 @@
+<p class="alert alert-info" role="alert"
+  phx-click="lv:clear-flash"
+  phx-value-key="info"><%= live_flash(@flash, :info) %></p>
+
+<p class="alert alert-danger" role="alert"
+  phx-click="lv:clear-flash"
+  phx-value-key="error"><%= live_flash(@flash, :error) %></p>
+
 <div class="bg-white p-8 my-16 mx-auto max-w-screen-sm min-w-min">
 
     <div class="flex flex-row justify-around mb-8">

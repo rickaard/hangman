@@ -35,3 +35,7 @@ h1 {
 .tab-button--inactive {
     @apply border-0 rounded-none;
 }
+
+.input-wrapper input {
+    padding-left: 4.5rem;
+}

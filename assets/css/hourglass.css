@@ -1,0 +1,38 @@
+/* "borrowed" from here: https://codepen.io/tomhazledine/pen/BKrXwJ */
+
+.hourglass-wrapper {
+    --fill: #000;
+    --bg: #fff;
+}
+
+.hourglass {
+    display: block;
+    background: var(--bg);
+    margin: 3em auto;
+    width: 2em;
+    height: 4em;
+    animation: hourglass 1s linear infinite;
+}
+
+.outer {
+    fill: var(--fill);
+}
+
+.middle {
+    fill: var(--bg);
+}
+
+@keyframes hourglass {
+    0% {
+        transform: rotate(0deg);
+        box-shadow: inset var(--fill) 0 -0em 0 0, inset var(--bg) 0 -2em 0 0, inset var(--fill) 0 -4em 0 0;
+    }
+    80% {
+        transform: rotate(0deg);
+        box-shadow: inset var(--fill) 0 -2em 0 0, inset var(--bg) 0 -2em 0 0, inset var(--fill) 0 -2em 0 0;
+    }
+    100% {
+        transform: rotate(180deg);
+        box-shadow: inset var(--fill) 0 -2em 0 0, inset var(--bg) 0 -2em 0 0, inset var(--fill) 0 -2em 0 0;
+    }
+}

@@ -92,6 +92,7 @@ defmodule HangmanWeb.GameLive do
       |> add_to_correct_or_wrong_list(letter)
       |> check_if_win()
       |> check_if_dead()
+      |> maybe_change_picking_user()
 
     HangmanWeb.Endpoint.broadcast_from(self(), get_room(room_id), "add_event", socket.assigns)
     {:noreply, socket}
@@ -132,6 +133,16 @@ defmodule HangmanWeb.GameLive do
        wrong_steps: state.wrong_steps,
        wrongly_guessed_characters: state.wrongly_guessed_characters
      )}
+  end
+
+  def handle_info(%{event: "update_picking_word", payload: _}, %{assigns: %{user: user}} = socket) do
+    new_user = %{user | picked_word: !user.picked_word}
+
+    socket =
+      socket
+      |> assign(:user, new_user)
+
+    {:noreply, socket}
   end
 
   def handle_info(
@@ -186,6 +197,22 @@ defmodule HangmanWeb.GameLive do
 
     socket
     |> assign(:users, users)
+  end
+
+  defp maybe_change_picking_user(
+         %{assigns: %{game_status: status, room_id: room, user: user}} = socket
+       ) do
+    case status do
+      :over ->
+        HangmanWeb.Endpoint.broadcast_from(self(), get_room(room), "update_picking_word", %{})
+        new_user = %{user | picked_word: !user.picked_word}
+
+        socket
+        |> assign(:user, new_user)
+
+      _ ->
+        socket
+    end
   end
 
   defp check_if_win(

@@ -1,14 +1,15 @@
 /* Load Tailwind */
 
+@import "./phoenix.css";
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 @import "./custom.css";
 @import "./hangman.css";
+@import "./hourglass.css";
 
 /* This file is for your main application css. */
 
-@import "./phoenix.css";
 
 /* LiveView specific classes for your customizations */
 
